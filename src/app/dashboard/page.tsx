@@ -1,6 +1,6 @@
 import { validateRequest } from "@/lib/auth";
+import { getNotesByUser } from "@/lib/store";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/db";
 import { logoutAction } from "@/app/actions/auth";
 import NoteForm from "@/components/notes/NoteForm";
 import NoteCard from "@/components/notes/NoteCard";
@@ -15,10 +15,7 @@ export default async function DashboardPage() {
   const { user } = await validateRequest();
   if (!user) redirect("/login");
 
-  const notes = await prisma.note.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const notesList = getNotesByUser(user.id);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -49,9 +46,9 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Notes</h1>
           <p className="text-muted-foreground mt-1">
-            {notes.length === 0
+            {notesList.length === 0
               ? "No notes yet — add your first one below."
-              : `${notes.length} note${notes.length === 1 ? "" : "s"}`}
+              : `${notesList.length} note${notesList.length === 1 ? "" : "s"}`}
           </p>
         </div>
 
@@ -65,9 +62,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Notes list */}
-        {notes.length > 0 ? (
+        {notesList.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2">
-            {notes.map((note) => (
+            {notesList.map((note) => (
               <NoteCard
                 key={note.id}
                 id={note.id}
