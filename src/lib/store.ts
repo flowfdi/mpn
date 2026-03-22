@@ -17,7 +17,9 @@ export interface NoteRecord {
   title: string;
   content: string;
   userId: string;
+  isAiGenerated: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const g = globalThis as unknown as {
