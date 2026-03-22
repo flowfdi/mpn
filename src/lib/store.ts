@@ -6,6 +6,8 @@
  * Users + notes are ephemeral — acceptable for demo.
  */
 
+import { MOCK_NOTES } from "@/lib/mockData";
+
 export interface UserRecord {
   id: string;
   email: string;
@@ -38,4 +40,25 @@ export function getNotesByUser(userId: string): NoteRecord[] {
   return Array.from(notes.values())
     .filter((n) => n.userId === userId)
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+/**
+ * Seed demo notes for a user if they have none.
+ * Called at signup/login so the dashboard is never empty.
+ * Safe to call multiple times — no-ops if notes already exist.
+ */
+export function seedDemoNotes(userId: string): void {
+  if (getNotesByUser(userId).length > 0) return;
+  for (const mock of MOCK_NOTES) {
+    const id = `${userId}-${mock.id}`;
+    notes.set(id, {
+      id,
+      title: mock.title,
+      content: mock.content,
+      userId,
+      isAiGenerated: mock.isAiGenerated,
+      createdAt: new Date(mock.createdAt),
+      updatedAt: new Date(mock.createdAt),
+    });
+  }
 }

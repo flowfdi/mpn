@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { signupAction } from "@/app/actions/auth";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,40 @@ import Link from "next/link";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 export default function SignupForm() {
-  const [state, formAction, isPending] = useActionState(signupAction, null);
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setIsPending(true);
+
+    const form = new FormData(e.currentTarget);
+    const email = form.get("email") as string;
+    const password = form.get("password") as string;
+
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
+  }
 
   return (
     <Card className="w-full max-w-md shadow-lg">
@@ -27,12 +60,12 @@ export default function SignupForm() {
           Enter your email and a password to get started.
         </CardDescription>
       </CardHeader>
-      <form action={formAction}>
+      <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {state?.error && (
+          {error && (
             <div className="flex items-center gap-2 rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
               <AlertCircle className="h-4 w-4 shrink-0" />
-              {state.error}
+              {error}
             </div>
           )}
           <div className="space-y-2">
