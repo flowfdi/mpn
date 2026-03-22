@@ -1,7 +1,11 @@
 "use server";
 
-import { lucia } from "@/lib/auth";
 import { users, getUserByEmail } from "@/lib/store";
+import {
+  encodeSession,
+  SESSION_COOKIE,
+  sessionCookieOptions,
+} from "@/lib/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -15,7 +19,8 @@ export async function signupAction(
   const email = formData.get("email")?.toString().trim().toLowerCase();
   const password = formData.get("password")?.toString();
 
-  if (!email || !password) return { error: "Email and password are required." };
+  if (!email || !password)
+    return { error: "Email and password are required." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return { error: "Please enter a valid email address." };
   if (password.length < 8)
@@ -24,13 +29,15 @@ export async function signupAction(
     return { error: "An account with this email already exists." };
 
   const id = crypto.randomUUID();
-  const hashedPassword = await bcrypt.hash(password, 10);
-  users.set(id, { id, email, password: hashedPassword });
+  const hashed = await bcrypt.hash(password, 10);
+  users.set(id, { id, email, password: hashed });
 
-  const session = await lucia.createSession(id, {});
-  const sessionCookie = lucia.createSessionCookie(session.id);
+  // Encode user identity into a signed cookie — no server-side session store.
+  // This token is verified on every request via HMAC, so it's safe across
+  // any number of Vercel Lambda invocations.
+  const token = await encodeSession({ id, email });
   const cookieStore = await cookies();
-  cookieStore.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+  cookieStore.set(SESSION_COOKIE, token, sessionCookieOptions());
 
   redirect("/dashboard");
 }
@@ -42,7 +49,8 @@ export async function loginAction(
   const email = formData.get("email")?.toString().trim().toLowerCase();
   const password = formData.get("password")?.toString();
 
-  if (!email || !password) return { error: "Email and password are required." };
+  if (!email || !password)
+    return { error: "Email and password are required." };
 
   const user = getUserByEmail(email);
   if (!user) return { error: "Invalid email or password." };
@@ -50,21 +58,15 @@ export async function loginAction(
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return { error: "Invalid email or password." };
 
-  const session = await lucia.createSession(user.id, {});
-  const sessionCookie = lucia.createSessionCookie(session.id);
+  const token = await encodeSession({ id: user.id, email: user.email });
   const cookieStore = await cookies();
-  cookieStore.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+  cookieStore.set(SESSION_COOKIE, token, sessionCookieOptions());
 
   redirect("/dashboard");
 }
 
 export async function logoutAction() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get(lucia.sessionCookieName)?.value;
-  if (sessionId) await lucia.invalidateSession(sessionId);
-
-  const blank = lucia.createBlankSessionCookie();
-  cookieStore.set(blank.name, blank.value, blank.attributes);
-
+  cookieStore.delete(SESSION_COOKIE);
   redirect("/login");
 }

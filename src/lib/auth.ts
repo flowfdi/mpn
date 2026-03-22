@@ -1,44 +1,28 @@
-import { Lucia } from "lucia";
-import { memoryAdapter } from "./adapter";
 import { cookies } from "next/headers";
+import {
+  SESSION_COOKIE,
+  decodeSession,
+  type SessionPayload,
+} from "./session";
 
-export const lucia = new Lucia(memoryAdapter, {
-  sessionCookie: {
-    attributes: {
-      secure: process.env.NODE_ENV === "production",
-    },
-  },
-  getUserAttributes: (attributes) => {
-    return { email: attributes.email };
-  },
-});
+export type AuthUser = SessionPayload;
 
-export async function validateRequest() {
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get(lucia.sessionCookieName)?.value ?? null;
-  if (!sessionId) return { user: null, session: null };
-
-  const result = await lucia.validateSession(sessionId);
-
+/**
+ * Read and verify the session cookie. Returns the authenticated user
+ * or null — works identically in Server Components, Server Actions,
+ * and Middleware across all Vercel Lambda invocations (stateless).
+ */
+export async function validateRequest(): Promise<
+  { user: AuthUser } | { user: null }
+> {
   try {
-    if (result.session?.fresh) {
-      const c = lucia.createSessionCookie(result.session.id);
-      cookieStore.set(c.name, c.value, c.attributes);
-    }
-    if (!result.session) {
-      const c = lucia.createBlankSessionCookie();
-      cookieStore.set(c.name, c.value, c.attributes);
-    }
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+    if (!token) return { user: null };
+
+    const user = await decodeSession(token);
+    return user ? { user } : { user: null };
   } catch {
-    // Ignore: Next.js blocks cookie writes during static render
-  }
-
-  return result;
-}
-
-declare module "lucia" {
-  interface Register {
-    Lucia: typeof lucia;
-    DatabaseUserAttributes: { email: string };
+    return { user: null };
   }
 }

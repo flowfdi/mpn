@@ -1,19 +1,15 @@
 /**
- * In-memory data store — no database required.
- * Uses `globalThis` so data survives Next.js hot reloads in dev.
- * On Vercel: data resets per cold start (fine for demo).
+ * In-memory store — persists within a warm Lambda, resets on cold start.
+ * Pinned to globalThis so Next.js dev hot-reloads don't wipe state.
+ *
+ * Auth sessions are stateless (signed cookies) so they survive cold starts.
+ * Users + notes are ephemeral — acceptable for demo.
  */
 
 export interface UserRecord {
   id: string;
   email: string;
   password: string; // bcrypt hash
-}
-
-export interface SessionRecord {
-  id: string;
-  userId: string;
-  expiresAt: Date;
 }
 
 export interface NoteRecord {
@@ -26,12 +22,10 @@ export interface NoteRecord {
 
 const g = globalThis as unknown as {
   _pn_users?: Map<string, UserRecord>;
-  _pn_sessions?: Map<string, SessionRecord>;
   _pn_notes?: Map<string, NoteRecord>;
 };
 
 export const users: Map<string, UserRecord> = (g._pn_users ??= new Map());
-export const sessions: Map<string, SessionRecord> = (g._pn_sessions ??= new Map());
 export const notes: Map<string, NoteRecord> = (g._pn_notes ??= new Map());
 
 export function getUserByEmail(email: string): UserRecord | null {
