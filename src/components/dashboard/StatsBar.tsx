@@ -1,4 +1,4 @@
-import { FileText, Sparkles, Clock, TrendingUp } from "lucide-react";
+import { FileText, Sparkles, Clock, CalendarDays } from "lucide-react";
 
 interface StatsBarProps {
   totalNotes: number;
@@ -7,47 +7,63 @@ interface StatsBarProps {
 
 export default function StatsBar({ totalNotes, aiNotes }: StatsBarProps) {
   const manualNotes = totalNotes - aiNotes;
+  const today = new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
   const stats = [
     {
-      icon: <FileText className="h-4 w-4 text-blue-600" />,
+      icon: <FileText className="h-5 w-5 text-forest-600" />,
       label: "Total Notes",
       value: totalNotes,
-      bg: "bg-blue-50 dark:bg-blue-950/30",
+      sub: "all time",
+      bg: "bg-forest-50 border-forest-200",
+      val: "text-forest-700",
     },
     {
-      icon: <Sparkles className="h-4 w-4 text-purple-600" />,
+      icon: <Sparkles className="h-5 w-5 text-purple-600" />,
       label: "AI Generated",
       value: aiNotes,
-      bg: "bg-purple-50 dark:bg-purple-950/30",
+      sub: "by AI",
+      bg: "bg-purple-50 border-purple-200",
+      val: "text-purple-700",
     },
     {
-      icon: <Clock className="h-4 w-4 text-slate-500" />,
+      icon: <Clock className="h-5 w-5 text-blue-600" />,
       label: "Manual",
       value: manualNotes,
-      bg: "bg-slate-50 dark:bg-slate-800/50",
+      sub: "hand-typed",
+      bg: "bg-blue-50 border-blue-200",
+      val: "text-blue-700",
     },
     {
-      icon: <TrendingUp className="h-4 w-4 text-emerald-600" />,
-      label: "This Session",
-      value: totalNotes,
-      bg: "bg-emerald-50 dark:bg-emerald-950/30",
+      icon: <CalendarDays className="h-5 w-5 text-amber-600" />,
+      label: "Today",
+      value: today,
+      sub: new Date().toLocaleDateString("en-US", { weekday: "long" }),
+      bg: "bg-amber-50 border-amber-200",
+      val: "text-amber-700",
+      isDate: true,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((s) => (
         <div
           key={s.label}
-          className={`${s.bg} rounded-xl px-4 py-3 flex items-center gap-3`}
+          className={`${s.bg} border rounded-xl px-4 py-3.5 flex items-center gap-3`}
         >
-          <div>{s.icon}</div>
+          <div className="p-2 bg-white/70 rounded-lg shadow-sm">{s.icon}</div>
           <div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-none">
+            <p className={`text-xl font-bold leading-none ${s.val}`}>
               {s.value}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">
+              {s.label}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60">{s.sub}</p>
           </div>
         </div>
       ))}

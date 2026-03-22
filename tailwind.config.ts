@@ -39,11 +39,34 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Forest green palette — #228B22 = hsl(120,60%,34%)
+        forest: {
+          50:  "#f0faf0",
+          100: "#d9f2d9",
+          200: "#b3e5b3",
+          300: "#7cce7c",
+          400: "#44b044",
+          500: "#228B22",
+          600: "#1a6b1a",
+          700: "#155215",
+          800: "#0f3d0f",
+          900: "#0a290a",
+          950: "#051405",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "wave-bar": {
+          "0%, 100%": { transform: "scaleY(0.4)" },
+          "50%":       { transform: "scaleY(1.0)" },
+        },
+      },
+      animation: {
+        "wave-bar": "wave-bar 0.7s ease-in-out infinite",
       },
     },
   },

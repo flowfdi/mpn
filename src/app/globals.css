@@ -10,20 +10,45 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Forest green as primary (#228B22 = hsl 120 60% 34%) */
+    --primary: 120 60% 34%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 120 20% 94%;
+    --secondary-foreground: 120 40% 20%;
+    --muted: 120 10% 96%;
+    --muted-foreground: 120 5% 45%;
+    --accent: 120 20% 92%;
+    --accent-foreground: 120 40% 20%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 10% 89%;
+    --input: 120 10% 89%;
+    --ring: 120 60% 34%;
     --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 120 15% 6%;
+    --foreground: 0 0% 95%;
+    --card: 120 12% 9%;
+    --card-foreground: 0 0% 95%;
+    --popover: 120 12% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 120 55% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 15% 15%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 120 12% 14%;
+    --muted-foreground: 120 5% 55%;
+    --accent: 120 15% 15%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 120 12% 18%;
+    --input: 120 12% 18%;
+    --ring: 120 55% 45%;
   }
 
   * {
@@ -31,7 +56,37 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Thin webkit scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-forest-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-forest-400; }
+}
+
+@layer components {
+  /* Waveform bars for voice dictation */
+  .waveform-bar {
+    @apply inline-block w-[3px] rounded-full bg-forest-500 mx-px;
+    animation: wave-bar 0.7s ease-in-out infinite;
+  }
+  .waveform-bar:nth-child(1) { height: 8px;  animation-delay: 0.0s; }
+  .waveform-bar:nth-child(2) { height: 14px; animation-delay: 0.1s; }
+  .waveform-bar:nth-child(3) { height: 18px; animation-delay: 0.2s; }
+  .waveform-bar:nth-child(4) { height: 12px; animation-delay: 0.15s; }
+  .waveform-bar:nth-child(5) { height: 16px; animation-delay: 0.05s; }
+  .waveform-bar:nth-child(6) { height: 10px; animation-delay: 0.25s; }
+  .waveform-bar:nth-child(7) { height: 14px; animation-delay: 0.1s; }
+
+  /* Sidebar active item */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+           text-forest-100 hover:bg-forest-700 hover:text-white transition-colors cursor-pointer;
+  }
+  .sidebar-item.active {
+    @apply bg-forest-600 text-white shadow-inner;
   }
 }
